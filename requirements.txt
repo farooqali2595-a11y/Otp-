@@ -1,0 +1,4 @@
+requests==2.32.3
+flask==3.0.3
+pycountry==24.6.1
+phonenumbers==8.13.45
