@@ -135,7 +135,7 @@ def make_message(rec):
 <i>{msg}</i>
 
 ━━━━━━━━━━━━━━━━━━
-🔥 <b>POWERED BY MK ASAD KHAN</b>
+🔥 <b>POWERED BY ASAD&HUSSAIN KHAN</b>
 """
 
     return text, otp
