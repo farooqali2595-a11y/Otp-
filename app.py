@@ -11,7 +11,7 @@ import threading
 # ================= CONFIG =================
 
 API_TOKEN = "Qk5PSUNWfkJGUVZK"
-BASE_URL = "Qk5PSUNWfkJGUVZK"
+BASE_URL = "http://137.74.1.203/crapi/reseller/mdr.php"
 
 BOT_TOKEN = "7798354146:AAFzA28J60SBgPWqfYrt2sYaBJiYZPr5reg"
 CHAT_IDS = ["-1003931553992"]
@@ -42,7 +42,16 @@ def send(msg, otp):
 
     keyboard = {
         "inline_keyboard": [
-            [{"text": f"🔑 OTP: {otp}", "callback_data": f"otp_{otp}"}],
+            [
+                {"text": f"🔑 OTP: {otp}", "callback_data": f"otp_{otp}"}
+            ],
+            [
+                {"text": "📢 NUMBER CHANNEL", "url": "https://t.me/team_AxI_Num"},
+                {"text": "💬 DISCUSSION GROUP", "url": "https://t.me/axi_disscusion"}
+            ],
+            [
+                {"text": "📲 WHATSAPP COMMUNITY", "url": "https://chat.whatsapp.com/Bh68v9KpygrGfBL6VvgRWr"}
+            ]
         ]
     }
 
@@ -77,27 +86,22 @@ def get_country(num):
     except:
         return "Unknown", "🌍"
 
-# ================= OTP EXTRACTION =================
+# ================= OTP =================
 
-def extract_otp(msg):
+def get_otp(msg):
     msg = str(msg)
 
-    # 1️⃣ WhatsApp style (123-456 or 123 456)
-    match = re.search(r"\b(\d{3})[-\s]?(\d{3})\b", msg)
+    # Match: 123-456 OR 123 456
+    match = re.findall(r"\b\d{3}[-\s]?\d{3}\b", msg)
     if match:
-        return match.group(1) + match.group(2)
+        return match[0]
 
-    # 2️⃣ Continuous digits (4–8)
-    match = re.search(r"\b\d{4,8}\b", msg)
-    if match:
-        return match.group(0)
+    # Match normal: 4 to 6 digits
+    match = re.findall(r"\d{4,6}", msg)
+    return match[0] if match else "N/A"
 
-    # 3️⃣ Extract all digits and try
-    digits = re.findall(r"\d", msg)
-    if len(digits) >= 4:
-        return "".join(digits[:6])
-
-    return "N/A"
+def clean_otp(otp):
+    return otp.replace("-", "").replace(" ", "")
 
 def mask(num):
     num = str(num)
@@ -106,13 +110,16 @@ def mask(num):
 # ================= FORMAT =================
 
 def make_message(rec):
+
     num = rec.get("number")
     msg = rec.get("message")
     service = rec.get("cli")
     time_ = rec.get("datetime")
 
     country, flag = get_country(num)
-    otp = extract_otp(msg)
+
+    raw_otp = get_otp(msg)
+    otp = clean_otp(raw_otp)
 
     text = f"""
 <b>✨ 🔐 NEW OTP RECEIVED 🔐 ✨</b>
@@ -128,8 +135,9 @@ def make_message(rec):
 <i>{msg}</i>
 
 ━━━━━━━━━━━━━━━━━━
-🔥 <b>POWERED BY BOT</b>
+🔥 <b>POWERED BY MK ASAD KHAN</b>
 """
+
     return text, otp
 
 # ================= API =================
@@ -152,14 +160,17 @@ def fetch():
 
 def loop():
     global seen
+
     print("🚀 BOT RUNNING...")
 
     while True:
         data = fetch()
 
         if data.get("status") == "Success":
+
             for rec in data.get("data", []):
-                uid = rec.get("id") or str(rec)
+
+                uid = str(rec)
 
                 if uid not in seen:
                     seen.add(uid)
